@@ -1,14 +1,22 @@
-<!-- templates/batch1.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>MedGuard AI | Claim Batch Analysis</title>
+
+    <!-- Tailwind CSS via CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" crossorigin="anonymous" />
+
     <style>
         :root {
             --primary: #1d4ed8;
@@ -18,6 +26,7 @@
             --dark: #0f172a;
             --light: #f8fafc;
         }
+
         body {
             font-family: 'Inter', sans-serif;
             background: linear-gradient(135deg, #f0f4f8 0%, #e2e8f0 100%);
@@ -25,44 +34,45 @@
             color: #1e293b;
             min-height: 100vh;
         }
+
         .card {
             transition: all 0.3s ease;
             border: 1px solid rgba(255, 255, 255, 0.7);
             backdrop-filter: blur(10px);
         }
+
         .card:hover {
             transform: translateY(-5px);
             box-shadow: 0 20px 30px -10px rgba(0, 0, 0, 0.12), 0 0 20px rgba(59, 130, 246, 0.1);
         }
+
         .spinner {
-            border: 4px solid rgba(0, 0, 0, 0.1);
+            display: inline-block;
             width: 36px;
             height: 36px;
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-top-color: var(--primary);
             border-radius: 50%;
-            border-left-color: var(--primary);
             animation: spin 1s linear infinite;
         }
+
         @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+            to { transform: rotate(360deg); }
         }
+
+        .animate-fade-in {
+            animation: fadeIn 0.6s ease-out forwards;
+        }
+
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
         }
-        .animate-fade-in {
-            animation: fadeIn 0.6s ease-out forwards;
-        }
-        .btn-hover {
-            transition: all 0.3s ease;
-        }
-        .btn-hover:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
-        }
+
         .nav-item {
             position: relative;
         }
+
         .nav-item::after {
             content: '';
             position: absolute;
@@ -73,52 +83,21 @@
             background: var(--primary);
             transition: width 0.3s ease;
         }
+
         .nav-item:hover::after {
             width: 100%;
         }
-        .fraud-meter {
-            height: 8px;
-            border-radius: 9999px;
-        }
+
         canvas {
             max-height: 300px;
         }
-        .stat-card {
-            position: relative;
-            overflow: hidden;
-        }
-        .stat-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 4px;
-            background: linear-gradient(to right, var(--primary), var(--secondary));
-        }
+
         .dashboard-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
             gap: 1.5rem;
         }
-        .tooltip {
-            position: relative;
-        }
-        .tooltip:hover::after {
-            content: attr(data-tooltip);
-            position: absolute;
-            bottom: 100%;
-            left: 50%;
-            transform: translateX(-50%);
-            padding: 8px 12px;
-            background: #1f2937;
-            color: white;
-            border-radius: 6px;
-            font-size: 0.8rem;
-            white-space: nowrap;
-            z-index: 100;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-        }
+
         @media (max-width: 768px) {
             .dashboard-grid {
                 grid-template-columns: 1fr;
@@ -128,21 +107,21 @@
 </head>
 <body class="min-h-screen text-gray-800 antialiased">
     <!-- Header -->
-    <header class="bg-white shadow-sm border-b sticky top-0 z-50">
+    <header class="bg-white shadow-sm border-b sticky top-0 z-50" role="banner">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
             <div class="flex items-center space-x-3">
-                <div class="w-12 h-12 bg-gradient-to-br from-purple-600 to-pink-500 rounded-2xl flex items-center justify-center shadow-lg">
+                <div class="w-12 h-12 bg-gradient-to-br from-purple-600 to-pink-500 rounded-2xl flex items-center justify-center shadow-lg" aria-hidden="true">
                     <i class="fas fa-file-invoice-dollar text-white"></i>
                 </div>
                 <div>
                     <h1 class="text-xl font-bold text-gray-900">MedGuard AI</h1>
                     <p class="text-sm text-gray-500 flex items-center">
-                        <span class="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
+                        <span class="w-2 h-2 bg-green-500 rounded-full mr-2" aria-hidden="true"></span>
                         Claim-Level Batch Analysis • <3s Latency
                     </p>
                 </div>
             </div>
-            <nav class="hidden md:flex items-center space-x-6 text-sm">
+            <nav class="hidden md:flex items-center space-x-6 text-sm" aria-label="Main navigation">
                 <a href="{{ url_for('home') }}" class="nav-item text-gray-600 hover:text-purple-600 transition">Home</a>
             </nav>
         </div>
@@ -152,7 +131,7 @@
     <main class="max-w-7xl mx-auto px-4 sm:px-6 py-8">
         <!-- Hero Section -->
         <section class="text-center mb-12 animate-fade-in">
-            <h2 class="text-4xl md:text-5xl font-extrabold text-gray-900 mb-4 leading-tight">
+            <h2 class="text-3xl md:text-4xl lg:text-5xl font-extrabold text-gray-900 mb-4 leading-tight">
                 Claim-Level <span class="text-purple-600">Fraud Detection</span>
             </h2>
             <p class="text-lg text-gray-600 max-w-4xl mx-auto">
@@ -166,80 +145,74 @@
             <div class="mb-8 p-6 bg-purple-50 rounded-lg">
                 <div class="flex flex-col md:flex-row items-center gap-4">
                     <div class="relative w-full">
-                        <input type="file" id="file-input" accept=".csv,.json" class="w-full text-gray-500 file:mr-4 file:py-3 file:px-6 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-purple-100 file:text-purple-700 hover:file:bg-purple-200 transition duration-300" />
+                        <input type="file" id="file-input" accept=".csv,.json" class="w-full text-gray-500 file:mr-4 file:py-3 file:px-6 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-purple-100 file:text-purple-700 hover:file:bg-purple-200 transition duration-300" aria-label="Upload claim data file" />
                         <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                            <i class="fas fa-file-csv text-purple-400"></i>
+                            <i class="fas fa-file-csv text-purple-400" aria-hidden="true"></i>
                         </div>
                     </div>
-                    <button id="analyze-btn" class="w-full md:w-auto px-8 py-3 bg-gradient-to-r from-purple-600 to-purple-700 text-white font-semibold rounded-xl shadow-md hover:from-purple-700 hover:to-purple-800 transition duration-300 disabled:bg-gray-400 disabled:cursor-not-allowed flex justify-center items-center btn-hover">
+                    <button id="analyze-btn" type="button" class="w-full md:w-auto px-8 py-3 bg-gradient-to-r from-purple-600 to-purple-700 text-white font-semibold rounded-xl shadow-md hover:from-purple-700 hover:to-purple-800 disabled:bg-gray-400 disabled:cursor-not-allowed flex justify-center items-center transition-all duration-300 transform hover:-translate-y-1 hover:shadow-lg">
                         <span id="analyze-btn-text">Analyze Claims</span>
                     </button>
                 </div>
                 <p class="text-sm text-purple-600 mt-4 text-center">
-                    <i class="fas fa-info-circle mr-1"></i>
-                    Required columns: 
-                    <code class="bg-purple-200 px-1 py-0.5 rounded text-xs">Total_Claims_Per_Bene</code>,
-                    <code class="bg-purple-200 px-1 py-0.5 rounded text-xs">TimeInHptal</code>,
-                    <code class="bg-purple-200 px-1 py-0.5 rounded text-xs">Provider_Claim_Frequency</code>,
-                    <code class="bg-purple-200 px-1 py-0.5 rounded text-xs">ChronicCond_stroke_Yes</code>,
-                    <code class="bg-purple-200 px-1 py-0.5 rounded text-xs">DeductibleAmtPaid</code>,
-                    <code class="bg-purple-200 px-1 py-0.5 rounded text-xs">NoOfMonths_PartBCov</code>,
-                    <code class="bg-purple-200 px-1 py-0.5 rounded text-xs">NoOfMonths_PartACov</code>,
-                    <code class="bg-purple-200 px-1 py-0.5 rounded text-xs">OPD_Flag_Yes</code>,
-                    <code class="bg-purple-200 px-1 py-0.5 rounded text-xs">Diagnosis_Count</code>,
-                    <code class="bg-purple-200 px-1 py-0.5 rounded text-xs">ChronicDisease_Count</code>,
-                    <code class="bg-purple-200 px-1 py-0.5 rounded text-xs">Age</code>
+                    <i class="fas fa-info-circle mr-1" aria-hidden="true"></i>
+                    CSV or JSON
                 </p>
             </div>
+
             <div id="ai-buttons-container" class="hidden grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-                <button id="explain-btn" class="px-6 py-3 bg-gradient-to-r from-green-600 to-green-700 text-white font-semibold rounded-xl shadow-md hover:from-green-700 hover:to-green-800 transition duration-300 btn-hover flex items-center justify-center gap-2">
+                <button id="explain-btn" type="button" class="px-6 py-3 bg-gradient-to-r from-green-600 to-green-700 text-white font-semibold rounded-xl shadow-md hover:from-green-700 hover:to-green-800 transition-all duration-300 transform hover:-translate-y-1 hover:shadow-lg flex items-center justify-center gap-2">
                     <i class="fas fa-robot"></i>
                     <span>Generate AI Report</span>
                 </button>
-                <button id="dashboard-btn" class="px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white font-semibold rounded-xl shadow-md hover:from-blue-700 hover:to-blue-800 transition duration-300 btn-hover flex items-center justify-center gap-2">
+                <button id="dashboard-btn" type="button" class="px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white font-semibold rounded-xl shadow-md hover:from-blue-700 hover:to-blue-800 transition-all duration-300 transform hover:-translate-y-1 hover:shadow-lg flex items-center justify-center gap-2">
                     <i class="fas fa-chart-line"></i>
                     <span>View Dashboard</span>
                 </button>
             </div>
-            <div id="message-container" class="p-4 rounded-lg hidden text-center"></div>
+
+            <div id="message-container" class="p-4 rounded-lg hidden text-center" role="alert"></div>
         </section>
 
         <!-- Summary Section -->
         <section id="summary-container" class="hidden mb-8">
             <h3 class="text-xl font-semibold text-gray-800 mb-6">Analysis Summary</h3>
             <div class="dashboard-grid">
-                <div class="stat-card bg-white p-6 rounded-2xl shadow-md">
+                <div class="bg-white p-6 rounded-2xl shadow-md relative overflow-hidden">
+                    <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-600 to-green-600"></div>
                     <div class="flex items-start justify-between">
                         <div>
                             <p class="text-sm font-semibold text-gray-500 uppercase tracking-wide">Claims Processed</p>
                             <p id="total-claims" class="text-3xl font-extrabold text-purple-600 mb-2">0</p>
                             <div class="text-xs text-gray-500">Total claims analyzed</div>
                         </div>
-                        <div class="bg-purple-100 p-3 rounded-lg">
+                        <div class="bg-purple-100 p-3 rounded-lg" aria-hidden="true">
                             <i class="fas fa-file-invoice text-purple-600 text-xl"></i>
                         </div>
                     </div>
                 </div>
-                <div class="stat-card bg-white p-6 rounded-2xl shadow-md">
+                <div class="bg-white p-6 rounded-2xl shadow-md relative overflow-hidden">
+                    <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-yellow-500 to-orange-500"></div>
                     <div class="flex items-start justify-between">
                         <div>
                             <p class="text-sm font-semibold text-gray-500 uppercase tracking-wide">Suspicious Claims</p>
                             <p id="total-flags" class="text-3xl font-extrabold text-yellow-600 mb-2">0</p>
                             <div class="text-xs text-gray-500">Requires review</div>
                         </div>
-                        <div class="bg-yellow-100 p-3 rounded-lg">
+                        <div class="bg-yellow-100 p-3 rounded-lg" aria-hidden="true">
                             <i class="fas fa-flag text-yellow-600 text-xl"></i>
                         </div>
                     </div>
                 </div>
-                <div class="stat-card bg-white p-6 rounded-2xl shadow-md">
+                <div class="bg-white p-6 rounded-2xl shadow-md relative overflow-hidden">
+                    <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-green-500 to-teal-500"></div>
                     <div class="flex items-start justify-between">
                         <div>
                             <p class="text-sm font-semibold text-gray-500 uppercase tracking-wide">Potential Savings</p>
                             <p id="total-savings" class="text-3xl font-extrabold text-green-600 mb-2">$0.00</p>
                             <div class="text-xs text-gray-500">Estimated recovery</div>
                         </div>
-                        <div class="bg-green-100 p-3 rounded-lg">
+                        <div class="bg-green-100 p-3 rounded-lg" aria-hidden="true">
                             <i class="fas fa-dollar-sign text-green-600 text-xl"></i>
                         </div>
                     </div>
@@ -265,11 +238,11 @@
     </main>
 
     <!-- Explainable AI Modal -->
-    <div id="explain-modal" class="fixed inset-0 bg-white z-50 overflow-auto hidden">
-        <button id="close-explain-modal" class="absolute top-4 right-4 text-white bg-gray-800 hover:bg-gray-700 rounded-full w-10 h-10 flex items-center justify-center text-xl z-10 btn-hover">&times;</button>
+    <div id="explain-modal" class="fixed inset-0 bg-white z-50 overflow-auto hidden" aria-hidden="true" role="dialog">
+        <button id="close-explain-modal" type="button" class="absolute top-4 right-4 text-white bg-gray-800 hover:bg-gray-700 rounded-full w-10 h-10 flex items-center justify-center text-xl z-10 transition-all duration-200 transform hover:scale-105" aria-label="Close modal">&times;</button>
         <div class="p-6 max-w-5xl mx-auto">
             <div class="flex items-center mb-6">
-                <i class="fas fa-robot text-green-600 text-2xl mr-2"></i>
+                <i class="fas fa-robot text-green-600 text-2xl mr-2" aria-hidden="true"></i>
                 <h3 class="text-3xl font-bold text-gray-800">Explainable AI Report</h3>
             </div>
             <div id="explain-content" class="text-gray-700 leading-relaxed bg-gray-50 p-6 rounded-lg max-h-[calc(100vh-160px)] overflow-y-auto whitespace-pre-line"></div>
@@ -277,54 +250,58 @@
     </div>
 
     <!-- Dashboard Modal -->
-    <div id="dashboard-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 overflow-auto hidden">
+    <div id="dashboard-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 overflow-auto hidden" aria-hidden="true" role="dialog">
         <div class="bg-white min-h-screen p-6">
-            <button id="close-dashboard-modal" class="absolute top-4 right-4 text-white bg-gray-800 hover:bg-gray-700 rounded-full w-10 h-10 flex items-center justify-center text-xl z-10 btn-hover">&times;</button>
+            <button id="close-dashboard-modal" type="button" class="absolute top-4 right-4 text-white bg-gray-800 hover:bg-gray-700 rounded-full w-10 h-10 flex items-center justify-center text-xl z-10 transition-all duration-200 transform hover:scale-105" aria-label="Close dashboard">&times;</button>
             <div class="flex items-center mb-6">
-                <i class="fas fa-chart-line text-blue-600 text-2xl mr-2"></i>
+                <i class="fas fa-chart-line text-blue-600 text-2xl mr-2" aria-hidden="true"></i>
                 <h3 class="text-3xl font-bold text-gray-800">Claim Fraud Dashboard</h3>
             </div>
             <div class="dashboard-grid mb-8">
-                <div class="stat-card bg-white p-5 rounded-2xl shadow-md">
+                <div class="bg-white p-5 rounded-2xl shadow-md relative overflow-hidden">
+                    <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-purple-600 to-pink-500"></div>
                     <div class="flex items-start justify-between">
                         <div>
                             <p class="text-sm font-semibold text-gray-500 uppercase tracking-wide">Total Claims</p>
                             <p id="dash-total-claims" class="text-2xl font-bold text-gray-800 mt-2">0</p>
                         </div>
-                        <div class="bg-purple-100 p-2 rounded-lg">
+                        <div class="bg-purple-100 p-2 rounded-lg" aria-hidden="true">
                             <i class="fas fa-file-invoice text-purple-600"></i>
                         </div>
                     </div>
                 </div>
-                <div class="stat-card bg-white p-5 rounded-2xl shadow-md">
+                <div class="bg-white p-5 rounded-2xl shadow-md relative overflow-hidden">
+                    <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-yellow-500 to-orange-500"></div>
                     <div class="flex items-start justify-between">
                         <div>
                             <p class="text-sm font-semibold text-gray-500 uppercase tracking-wide">Suspicious Claims</p>
                             <p id="dash-total-flags" class="text-2xl font-bold text-yellow-600 mt-2">0</p>
                         </div>
-                        <div class="bg-yellow-100 p-2 rounded-lg">
+                        <div class="bg-yellow-100 p-2 rounded-lg" aria-hidden="true">
                             <i class="fas fa-flag text-yellow-600"></i>
                         </div>
                     </div>
                 </div>
-                <div class="stat-card bg-white p-5 rounded-2xl shadow-md">
+                <div class="bg-white p-5 rounded-2xl shadow-md relative overflow-hidden">
+                    <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-green-500 to-teal-500"></div>
                     <div class="flex items-start justify-between">
                         <div>
                             <p class="text-sm font-semibold text-gray-500 uppercase tracking-wide">Potential Savings</p>
                             <p id="dash-total-savings" class="text-2xl font-bold text-green-600 mt-2">$0.00</p>
                         </div>
-                        <div class="bg-green-100 p-2 rounded-lg">
+                        <div class="bg-green-100 p-2 rounded-lg" aria-hidden="true">
                             <i class="fas fa-dollar-sign text-green-600"></i>
                         </div>
                     </div>
                 </div>
-                <div class="stat-card bg-white p-5 rounded-2xl shadow-md">
+                <div class="bg-white p-5 rounded-2xl shadow-md relative overflow-hidden">
+                    <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-red-500 to-pink-500"></div>
                     <div class="flex items-start justify-between">
                         <div>
                             <p class="text-sm font-semibold text-gray-500 uppercase tracking-wide">High-Risk Claims</p>
                             <p id="dash-high-risk" class="text-2xl font-bold text-red-600 mt-2">0</p>
                         </div>
-                        <div class="bg-red-100 p-2 rounded-lg">
+                        <div class="bg-red-100 p-2 rounded-lg" aria-hidden="true">
                             <i class="fas fa-exclamation-triangle text-red-600"></i>
                         </div>
                     </div>
@@ -335,27 +312,27 @@
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div class="bg-white rounded-lg shadow p-4">
                     <h4 class="text-lg font-semibold mb-3 text-gray-700">1. Fraud vs Legitimate</h4>
-                    <canvas id="fraudVsNonFraudChart"></canvas>
+                    <canvas id="fraudVsNonFraudChart" aria-label="Fraudulent vs Legitimate Claims" role="img"></canvas>
                 </div>
                 <div class="bg-white rounded-lg shadow p-4">
                     <h4 class="text-lg font-semibold mb-3 text-gray-700">2. Risk Level Distribution</h4>
-                    <canvas id="riskLevelDistributionChart"></canvas>
+                    <canvas id="riskLevelDistributionChart" aria-label="Risk Level Distribution" role="img"></canvas>
                 </div>
                 <div class="bg-white rounded-lg shadow p-4">
                     <h4 class="text-lg font-semibold mb-3 text-gray-700">3. Diagnosis Code Breakdown</h4>
-                    <canvas id="diagnosisCodeChart"></canvas>
+                    <canvas id="diagnosisCodeChart" aria-label="Top Diagnosis Codes in Fraudulent Claims" role="img"></canvas>
                 </div>
                 <div class="bg-white rounded-lg shadow p-4">
                     <h4 class="text-lg font-semibold mb-3 text-gray-700">4. Claim Amount Histogram</h4>
-                    <canvas id="claimAmountHistogram"></canvas>
+                    <canvas id="claimAmountHistogram" aria-label="Distribution of Claim Amounts" role="img"></canvas>
                 </div>
                 <div class="bg-white rounded-lg shadow p-4">
                     <h4 class="text-lg font-semibold mb-3 text-gray-700">5. Procedure Code Analysis</h4>
-                    <canvas id="procedureCodeChart"></canvas>
+                    <canvas id="procedureCodeChart" aria-label="Procedure Code Frequency" role="img"></canvas>
                 </div>
                 <div class="bg-white rounded-lg shadow p-4">
                     <h4 class="text-lg font-semibold mb-3 text-gray-700">6. Model Confidence</h4>
-                    <canvas id="confidenceChart"></canvas>
+                    <canvas id="confidenceChart" aria-label="Average Model Confidence" role="img"></canvas>
                 </div>
             </div>
         </div>
@@ -401,7 +378,7 @@
                 formData.append('file', file);
 
                 try {
-                    const response = await fetch('/claim_batch_analyze', {  // ← Unique route
+                    const response = await fetch('/claim_batch_analyze', {
                         method: 'POST',
                         body: formData
                     });
@@ -415,7 +392,8 @@
                         showMessage(data.error || 'Failed to process claims.', 'bg-red-100 text-red-700');
                     }
                 } catch (err) {
-                    showMessage('Network error. Try again.', 'bg-red-100 text-red-700');
+                    console.error('Network error:', err);
+                    showMessage('Network error. Check connection and try again.', 'bg-red-100 text-red-700');
                 } finally {
                     showLoading(false);
                 }
@@ -438,7 +416,7 @@
                         body: JSON.stringify(summaryData)
                     });
                     const data = await res.json();
-                    displayExplainReport(data.explanation || "Could not generate report.");
+                    displayExplainReport(data.explanation || "Could not generate AI explanation.");
                 } catch (err) {
                     displayExplainReport("Error connecting to AI service.");
                 } finally {
@@ -456,7 +434,11 @@
             closeDashboardModalBtn.addEventListener('click', () => dashboardModal.classList.add('hidden'));
 
             function showLoading(loading) {
-                analyzeBtnText.innerHTML = loading ? '<div class="spinner"></div>' : 'Analyze Claims';
+                if (loading) {
+                    analyzeBtnText.innerHTML = '<div class="spinner" aria-label="Loading..."></div>';
+                } else {
+                    analyzeBtnText.textContent = 'Analyze Claims';
+                }
                 analyzeBtn.disabled = loading;
             }
 
@@ -477,6 +459,7 @@
             function displayResults(results, summary) {
                 document.getElementById('summary-container').classList.remove('hidden');
                 document.getElementById('results-container').classList.remove('hidden');
+
                 totalClaimsEl.textContent = summary.total_claims_processed;
                 totalFlagsEl.textContent = summary.total_fraud_flags;
                 totalSavingsEl.textContent = `$${summary.total_potential_savings.toFixed(2)}`;
@@ -508,7 +491,7 @@
 
             function showExplainLoading(loading) {
                 if (loading) {
-                    explainContent.innerHTML = '<div class="flex justify-center items-center"><p>Generating AI insights...</p><div class="spinner ml-3"></div></div>';
+                    explainContent.innerHTML = '<div class="flex justify-center items-center"><p>Generating AI insights...</p><div class="spinner ml-3" aria-label="Loading"></div></div>';
                 }
                 explainBtn.disabled = loading;
             }
@@ -518,6 +501,7 @@
             }
 
             function renderCharts(results) {
+                // Destroy existing charts
                 Object.keys(window).forEach(k => {
                     if (window[k] instanceof Chart) window[k].destroy();
                 });
@@ -546,19 +530,28 @@
                     options: { responsive: true }
                 });
 
-                // 3. Diagnosis Code
+                // 3. Diagnosis Code (with fallback)
                 const diagCounts = {};
                 fraudClaims.forEach(c => {
-                    const code = c.DiagnosisCode || 'Unknown';
+                    const code = c.DiagnosisCode && c.DiagnosisCode.trim() !== '' ? c.DiagnosisCode : 'Unknown';
                     diagCounts[code] = (diagCounts[code] || 0) + 1;
                 });
+
+                // Fallback if all are unknown
+                if (Object.keys(diagCounts).length === 0) {
+                    diagCounts['No Data'] = 1;
+                }
+
                 new Chart(document.getElementById('diagnosisCodeChart').getContext('2d'), {
                     type: 'doughnut',
                     data: {
                         labels: Object.keys(diagCounts).slice(0, 5),
-                        datasets: [{ data: Object.values(diagCounts).slice(0, 5), backgroundColor: ['#4f46e5', '#7c3aed', '#a855f7', '#d946ef', '#e879f9'] }]
+                        datasets: [{ 
+                            data: Object.values(diagCounts).slice(0, 5), 
+                            backgroundColor: ['#4f46e5', '#7c3aed', '#a855f7', '#d946ef', '#e879f9'] 
+                        }]
                     },
-                    options: { responsive: true, cutout: '50%' }
+                    options: { responsive: true, cutout: '50%', plugins: { legend: { position: 'bottom' } } }
                 });
 
                 // 4. Claim Amount Histogram
@@ -617,7 +610,7 @@
                 lastResults.results
                     .filter(r => r.prediction === 'Fraud')
                     .forEach(c => {
-                        const diag = c.DiagnosisCode || 'Unknown Diagnosis';
+                        const diag = c.DiagnosisCode && c.DiagnosisCode.trim() !== '' ? c.DiagnosisCode : 'Unknown Diagnosis';
                         drivers[diag] = (drivers[diag] || 0) + 1;
                     });
                 return Object.entries(drivers)
